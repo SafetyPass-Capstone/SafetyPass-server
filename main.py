@@ -30,6 +30,7 @@ from sidebar import render_sidebar
 from simulation_logic import run_simulation_step, check_simulation_complete
 from utils import add_log
 
+
 # Redis 연동 추가
 from redis_manager import get_redis_manager
 import uuid

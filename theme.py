@@ -1,4 +1,3 @@
-
 # 다크 테마 CSS
 DARK_THEME_CSS = """
 <style>
@@ -39,14 +38,65 @@ DARK_THEME_CSS = """
         margin: 0 0 0.75rem 0;
     }
 
-    /* 3) 하지만 셀렉트박스(드롭다운) 내부 글씨는 제외 — 기본 색상으로 되돌림 */
-    /* native select/option */
-    select,
-    select * ,
-    option {
-        color: initial !important;
-        background-color: initial !important;
+    /* ========== 선택 박스 다크 테마 수정 ========== */
+    /* 3) 하지만 셀렉트박스(드롭다운) 내부 글씨는 제외 — 다크 테마 적용 */
+    
+    /* 선택 박스 컨테이너 */
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] {
+        background-color: #1a1f2e !important;
+        border-color: #30363d !important;
     }
+    
+    /* 선택 박스 입력 필드 */
+    div[data-baseweb="select"] input {
+        background-color: #1a1f2e !important;
+        color: #ffffff !important;
+    }
+    
+    /* 선택 박스 텍스트 */
+    div[data-baseweb="select"] div {
+        color: #ffffff !important;
+    }
+    
+    /* 드롭다운 팝업 */
+    div[data-baseweb="popover"] {
+        background-color: #1a1f2e !important;
+    }
+    
+    /* 드롭다운 옵션 리스트 */
+    ul[role="listbox"] {
+        background-color: #1a1f2e !important;
+    }
+    
+    /* 각 옵션 */
+    li[role="option"] {
+        background-color: #1a1f2e !important;
+        color: #ffffff !important;
+    }
+    
+    /* 옵션 호버 */
+    li[role="option"]:hover {
+        background-color: #2d3748 !important;
+    }
+    
+    /* 선택된 옵션 */
+    li[role="option"][aria-selected="true"] {
+        background-color: #30363d !important;
+    }
+    
+    /* native select/option도 다크 테마 적용 */
+    select {
+        background-color: #1a1f2e !important;
+        color: #ffffff !important;
+        border-color: #30363d !important;
+    }
+    
+    option {
+        background-color: #1a1f2e !important;
+        color: #ffffff !important;
+    }
+    /* ============================================== */
 
     
     /* 메트릭 카드 */

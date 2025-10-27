@@ -48,9 +48,13 @@ def render_system_status(G):
         total_min = int(st.session_state.total_evacuation_time)
         total_sec = int((st.session_state.total_evacuation_time * 60) % 60)
 
-        # 평균 대피시간 (분:초 변환)
-        avg_min = int(st.session_state.avg_evacuation_time)
-        avg_sec = int((st.session_state.avg_evacuation_time * 60) % 60)
+        # 평균 대피시간 (분:초 변환) - None 체크 추가
+        if hasattr(st.session_state, 'avg_evacuation_time') and st.session_state.avg_evacuation_time is not None:
+            avg_min = int(st.session_state.avg_evacuation_time)
+            avg_sec = int((st.session_state.avg_evacuation_time * 60) % 60)
+        else:
+            avg_min = 0
+            avg_sec = 0
 
         st.markdown(f"""
         <div class="metric-card">
@@ -65,6 +69,7 @@ def render_system_status(G):
             <div class="metric-value">{avg_min}분 {avg_sec}초</div>
         </div>
         """, unsafe_allow_html=True)
+
 
 # ui_components.py의 render_exit_controls 함수 전체 교체
 
