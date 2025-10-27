@@ -6,16 +6,17 @@ from utils import add_log
 
 def get_active_exits(G, exit_status_dict):
     """
-    활성화된 출구만 필터링 (정렬된 순서로 반환)
+    활성화된 출구만 필터링 (원본 순서 유지)
     
     Args:
         G: NetworkX 그래프
         exit_status_dict: {exit_name: True/False} 딕셔너리
     
     Returns:
-        active_exits: 활성화된 출구 노드 리스트 (정렬됨)
+        active_exits: 활성화된 출구 노드 리스트
     """
-    all_exits = sorted([n for n in G.nodes if G.nodes[n].get('type') == 'exit'], key=str)
+    # 그래프의 원본 순서대로 출구 추출 (정렬 제거!)
+    all_exits = [n for n in G.nodes if G.nodes[n].get('type') == 'exit']
     
     active_exits = []
     for exit_node in all_exits:
@@ -25,8 +26,8 @@ def get_active_exits(G, exit_status_dict):
         if is_active:
             active_exits.append(exit_node)
     
-    # 정렬된 순서 보장
-    return sorted(active_exits, key=str)
+    # 원본 순서 유지 (정렬 제거!)
+    return active_exits
 
 
 def recalculate_paths_with_active_exits(G):
@@ -59,8 +60,7 @@ def recalculate_paths_with_active_exits(G):
             add_log("경로 재계산 실패: 활성화된 출구 없음")
             return False
         
-        # 출구를 정렬하여 일관성 보장
-        active_exits = sorted(active_exits, key=str)
+        # 원본 순서 유지 (정렬 제거!)
         add_log(f"활성 출구: {len(active_exits)}개 - {active_exits}")
         
         # 기존 모델 데이터 사용
