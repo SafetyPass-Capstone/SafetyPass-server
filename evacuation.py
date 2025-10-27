@@ -14,6 +14,16 @@ from evacuation_time import compute_evacuation_times_from_paths
 import numpy as np
 import random
 import torch
+import sys
+
+
+def safe_print(msg):
+    """안전한 출력 함수 - I/O 오류 방지"""
+    try:
+        if sys.stdout and not sys.stdout.closed:
+            print(msg)
+    except (OSError, IOError):
+        pass
 
 def generate_evacuation_paths(G, pred, node_list, exit_nodes):
     """
@@ -71,11 +81,11 @@ def generate_evacuation_paths(G, pred, node_list, exit_nodes):
     
     improved = local_capacity_repair(G, seat_nodes, exit_nodes, pred_exit, apsp, exit_caps_arr, slack=0.15)
     
-    print(f"[Local repair] seats improved: {improved}")
-    print("Prototype → Exit mapping:")
+    safe_print(f"[Local repair] seats improved: {improved}")
+    safe_print("Prototype → Exit mapping:")
     # 정렬된 순서로 출력
     for k in sorted(proto_to_exit.keys()):
-        print(f"  proto {k} → {proto_to_exit[k]}")
+        safe_print(f"  proto {k} → {proto_to_exit[k]}")
     
     # Fixed-Mapping Dijkstra Replanner로 동적 경로 계획
     initial_paths, final_paths, final_costs = fixed_mapping_replan_loop(
@@ -93,9 +103,9 @@ def generate_evacuation_paths(G, pred, node_list, exit_nodes):
         full_recommendation[seat_node] = initial_paths.get(seat_node, None)
     
     # 대피 시간 계산
-    print("\n" + "="*50)
-    print("📊 대피 시간 계산")
-    print("="*50)
+    safe_print("\n" + "="*50)
+    safe_print("📊 대피 시간 계산")
+    safe_print("="*50)
     total_time, mean_time, seat_times = compute_evacuation_times_from_paths(
         G, full_recommendation, speed_mps=1.3
     )
