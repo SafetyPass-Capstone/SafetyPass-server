@@ -505,3 +505,48 @@ async def get_all_seats():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+@app.get("/api/frontend/fire-info")
+async def get_simple_fire_info():
+    """
+    간단한 화재 정보 조회 (화재 발생 지점 제외, 번진 곳만)
+    """
+    try:
+        session_id = SHARED_SESSION_ID
+        fire_data = redis_mgr.get_state(session_id, "fire_spread_data")
+        
+        # 화재 없음
+        if not fire_data:
+            return {
+                "status": "success",
+                "data": {
+                    "is_fire_active": False,
+                    "fire_origin": None,
+                    "fire_spread_nodes": []
+                }
+            }
+        
+        # 화재 발생 지점
+        fire_origin = fire_data.get("fire_origin")
+        
+        # 화재 도달 노드에서 발생 지점 제외
+        all_fire_nodes = fire_data.get("fire_reached_nodes", [])
+        
+        # 발생 지점 제외한 번진 곳만
+        fire_spread_nodes = [
+            node for node in all_fire_nodes 
+            if str(node) != str(fire_origin)
+        ]
+        
+        return {
+            "status": "success",
+            "data": {
+                "is_fire_active": True,
+                "fire_origin": fire_origin,  # 발생 지점 (참고용)
+                "fire_spread_nodes": fire_spread_nodes  # 번진 곳만 (발생지점 제외)
+            }
+        }
+    except Exception as e:
+        logger.error(f"화재 정보 조회 오류: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

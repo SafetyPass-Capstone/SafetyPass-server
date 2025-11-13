@@ -93,7 +93,6 @@ def sync_state_to_redis():
     else:
         # 이미 저장된 경우 Redis 업데이트
         redis_mgr.save_state(session_id, 'graph_edges', st.session_state.graph_edges)
-    # ==============================================
     
     # apsp 저장 (중요!)
     if 'apsp' in st.session_state and st.session_state.apsp:
@@ -111,6 +110,62 @@ def sync_state_to_redis():
     if st.session_state.get('gnn_model_loaded'):
         redis_mgr.save_state(session_id, 'total_evacuation_time', st.session_state.get('total_evacuation_time'))
         redis_mgr.save_state(session_id, 'avg_evacuation_time', st.session_state.get('avg_evacuation_time'))
+    
+    # ========== 화재 확산 데이터 동기화 추가 ==========
+    if st.session_state.get('simulation_running') and st.session_state.get('fire_node'):
+        from fire_simulation import get_fire_nodes
+        
+        current_time_min = st.session_state.get('current_time', 0) / 60
+        fire_nodes, fire_approaching = get_fire_nodes(G, current_time_min)
+        
+        # 각 노드별 화재 도달 시간
+        fire_arrival_times = {}
+        for node in G.nodes:
+            fire_time = G.nodes[node].get('fire_arrival_time', float('inf'))
+            if fire_time != float('inf'):
+                fire_arrival_times[str(node)] = fire_time
+        
+        fire_data = {
+            "fire_origin": st.session_state.fire_node,
+            "current_time_seconds": st.session_state.get('current_time', 0),
+            "current_time_minutes": current_time_min,
+            "fire_reached_nodes": list(fire_nodes),
+            "fire_approaching_nodes": list(fire_approaching),
+            "fire_arrival_times": fire_arrival_times,
+            "total_affected_nodes": len(fire_nodes) + len(fire_approaching)
+        }
+        
+        redis_mgr.save_state(session_id, 'fire_spread_data', fire_data)
+        add_log(f"화재 확산 데이터 동기화: 도달 {len(fire_nodes)}개, 접근 {len(fire_approaching)}개")
+    else:
+        # 화재가 없으면 데이터 초기화
+        redis_mgr.save_state(session_id, 'fire_spread_data', None)
+    # ==============================================
+
+def sync_fire_spread_to_redis():
+    """화재 확산 데이터를 Redis에 동기화"""
+    if not redis_mgr.is_connected():
+        return
+    
+    if st.session_state.simulation_running and st.session_state.fire_node:
+        from fire_simulation import get_fire_nodes
+        
+        current_time_min = st.session_state.current_time / 60
+        fire_nodes, fire_approaching = get_fire_nodes(G, current_time_min)
+        
+        fire_data = {
+            "fire_origin": st.session_state.fire_node,
+            "current_time": st.session_state.current_time,
+            "fire_reached": list(fire_nodes),  # 화재 도달 노드
+            "fire_approaching": list(fire_approaching),  # 화재 접근 노드
+            "fire_node_count": len(fire_nodes)
+        }
+        
+        redis_mgr.save_state(
+            st.session_state.session_id, 
+            "fire_spread_data", 
+            fire_data
+        )
 
 def check_redis_commands():
     """Redis에서 외부 명령 확인 및 처리"""
