@@ -234,27 +234,18 @@ if not st.session_state.gnn_model_loaded:
         if result[0] is not None:
             encoder, proto_head, exit_mapper, pyg_data, node_list, exit_nodes, pred = result
             
-            # ========== 출구 상태 초기화 추가 ==========
+            # ========== 출구 상태 초기화 (모두 활성화) ==========
             if 'exit_status' not in st.session_state:
                 st.session_state.exit_status = {str(n): True for n in exit_nodes}
             
-            # 활성화된 출구만 필터링
-            from exit_control_handler import get_active_exits
-            active_exit_nodes = get_active_exits(G, st.session_state.exit_status)
-            
-            # 활성 출구가 없으면 모두 활성화
-            if len(active_exit_nodes) == 0:
-                st.warning("활성 출구가 없어 모든 출구를 활성화합니다.")
-                st.session_state.exit_status = {str(n): True for n in exit_nodes}
-                active_exit_nodes = exit_nodes
-            
-            add_log(f"활성 출구 {len(active_exit_nodes)}개로 경로 생성")
+            # ⭐ 수정: 항상 전체 출구로 경로 생성 (고정)
+            add_log(f"전체 {len(exit_nodes)}개 출구로 경로 생성")
             # ==========================================
             
-            # 대피 경로 생성 (활성 출구만 사용)
+            # 대피 경로 생성 (전체 출구 사용)
             from evacuation import generate_evacuation_paths
             evacuation_result = generate_evacuation_paths(
-                G, pred, node_list, active_exit_nodes  # ← 변경: 활성 출구만 전달
+                G, pred, node_list, exit_nodes  # ← 전체 출구 사용 (고정)
             )
             
             st.session_state.evacuation_paths = evacuation_result[0]

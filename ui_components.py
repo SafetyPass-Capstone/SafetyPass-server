@@ -71,10 +71,8 @@ def render_system_status(G):
         """, unsafe_allow_html=True)
 
 
-# ui_components.py의 render_exit_controls 함수 전체 교체
-
 def render_exit_controls(G):
-    """출구 제어 패널 (토글 변경 시 경로 재계산)"""
+    """출구 제어 패널 (시각화 전용 - 경로 재계산 없음)"""
     from exit_control_handler import handle_exit_toggle_change, get_active_exits
     
     # 출구 노드 가져오기
@@ -123,15 +121,10 @@ def render_exit_controls(G):
                     label_visibility="collapsed"
                 )
                 
+                # ========== 수정: 경로 재계산 제거 ==========
                 # 상태 변경 감지
                 if new_status != current_status:
-                    # 마지막 출구를 끄려고 하면 경고
-                    if not new_status and active_count == 1:
-                        st.error("⚠️ 최소 1개의 출구는 활성화되어야 합니다!")
-                        # 강제로 다시 켜기
-                        st.session_state[toggle_key] = True
-                        st.session_state.exit_status[exit_name] = True
-                    else:
-                        # 정상 변경 처리
-                        handle_exit_toggle_change(G, exit_name, new_status)
-                        st.rerun()
+                    # 출구 상태만 업데이트 (경로 재계산 없음)
+                    handle_exit_toggle_change(G, exit_name, new_status)
+                    st.rerun()
+                # ==========================================
